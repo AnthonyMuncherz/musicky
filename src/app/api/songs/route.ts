@@ -1,10 +1,12 @@
+'use server';
+
 import { NextResponse } from 'next/server';
 import { getDBSongs } from '@/lib/db';
 
 // GET /api/songs - Get all songs
 export async function GET() {
   try {
-    const songs = getDBSongs();
+    const songs = await getDBSongs();
     
     // Remove audioData from response to reduce payload size
     const sanitizedSongs = songs.map(song => {

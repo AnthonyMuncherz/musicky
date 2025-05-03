@@ -70,6 +70,7 @@ export function usePlayerQueue() {
     if (nextSong) {
       // Set the new audio source and play
       if (audioRef.current) {
+        // Use the audioUrl directly - it's already a blob URL created during upload
         audioRef.current.src = nextSong.audioUrl;
         audioRef.current.play()
           .then(() => setIsPlaying(true))

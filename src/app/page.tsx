@@ -7,30 +7,40 @@ import SongList from '@/components/SongList';
 import Player from '@/components/Player';
 import PlayerQueue from '@/components/PlayerQueue';
 import PlayerHistory from '@/components/PlayerHistory';
-import { getUploadedSongs } from '@/lib/songService';
 import { Song } from '@/types/Song';
 import Link from 'next/link';
+import { getAllSongs } from '@/lib/songService';
 
 export default function Home() {
   const [songs, setSongs] = useState<Song[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   
-  // Get only uploaded songs
+  // Fetch songs from the server
   useEffect(() => {
-    setSongs(getUploadedSongs());
+    const loadSongs = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedSongs = await getAllSongs();
+        setSongs(fetchedSongs);
+      } catch (error) {
+        console.error('Failed to load songs:', error);
+        setSongs([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSongs();
     
-    // Add event listener for storage changes to update songs when uploads happen
-    const handleStorageChange = () => {
-      setSongs(getUploadedSongs());
+    // Add event listener for song uploads to refresh the list
+    const handleSongUploaded = () => {
+      loadSongs();
     };
     
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Create a custom event listener to listen for new uploads
-    window.addEventListener('songUploaded', handleStorageChange);
+    window.addEventListener('songUploaded', handleSongUploaded);
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('songUploaded', handleStorageChange);
+      window.removeEventListener('songUploaded', handleSongUploaded);
     };
   }, []);
   
@@ -47,61 +57,61 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="flex flex-col gap-8 animate-fade-in">
-        <h1 className="text-3xl font-bold animate-fade-in-up">Musicky</h1>
-        <p className="text-foreground/70 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          Your music, organized in a queue. Add songs to your playlist and enjoy!
-        </p>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Musicky</h1>
+          <p className="text-foreground/70">Your music, organized in a queue. Add songs to your playlist and enjoy!</p>
+        </div>
         
-        <Player 
-          currentSong={currentSong} 
-          isPlaying={isPlaying} 
-          onTogglePlay={togglePlay} 
+        <Player
+          currentSong={currentSong}
+          isPlaying={isPlaying}
+          onTogglePlay={togglePlay}
           onPlayNext={playNext}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            <div className="flex justify-between items-center mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Library</h2>
               <Link
                 href="/upload"
-                className="text-sm px-4 py-2 rounded-lg bg-foreground/10 hover:bg-foreground/20 transition-all duration-200 hover:scale-105 hover:shadow-sm"
+                className="px-4 py-2 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 hover:scale-105"
               >
                 Upload Music
               </Link>
             </div>
-            {songs.length === 0 ? (
-              <div className="bg-foreground/5 rounded-lg p-8 text-center">
-                <h3 className="text-lg font-medium mb-2">Your library is empty</h3>
-                <p className="text-foreground/70 mb-6">Start by uploading your favorite music tracks</p>
-                <Link
-                  href="/upload"
-                  className="inline-block px-5 py-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 hover:scale-105"
-                >
-                  Upload Your First Song
-                </Link>
+            
+            {isLoading ? (
+              <div className="text-center py-8">
+                <p className="text-foreground/50">Loading songs...</p>
               </div>
             ) : (
-              <SongList 
-                songs={songs} 
-                onAddToQueue={addToQueue} 
+              <SongList
+                songs={songs}
+                onAddToQueue={addToQueue}
                 currentSong={currentSong}
               />
             )}
           </div>
           
-          <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-            <PlayerQueue 
-              queue={queueItems} 
-              currentSong={currentSong} 
-              onRemove={removeFromQueue}
-            />
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Current Queue</h2>
+              <PlayerQueue
+                queue={queueItems}
+                currentSong={currentSong}
+                onRemove={removeFromQueue}
+              />
+            </div>
             
-            <PlayerHistory 
-              history={history} 
-              onAddToQueue={addToQueue}
-            />
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Recently Played</h2>
+              <PlayerHistory
+                history={history}
+                onAddToQueue={addToQueue}
+              />
+            </div>
           </div>
         </div>
       </div>

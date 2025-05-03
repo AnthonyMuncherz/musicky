@@ -1,59 +1,42 @@
-import { Song, sampleSongs } from '@/types/Song';
+import { Song } from '@/types/Song';
 
 /**
- * Get all songs (only user uploaded songs now)
+ * Get all songs from the server
  */
-export function getAllSongs(): Song[] {
-  // Only return uploaded songs
-  return getUploadedSongs();
+export async function getAllSongs(): Promise<Song[]> {
+  try {
+    const response = await fetch('/api/songs');
+    if (!response.ok) {
+      throw new Error('Failed to fetch songs');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching songs:', error);
+    return [];
+  }
 }
 
 /**
  * Get only user uploaded songs
  */
-export function getUploadedSongs(): Song[] {
-  if (typeof window === 'undefined') {
-    // Return empty array when running on server
-    return [];
-  }
-  
-  const storedSongs = localStorage.getItem('uploadedSongs');
-  if (!storedSongs) {
-    return [];
-  }
-  
-  try {
-    return JSON.parse(storedSongs);
-  } catch (error) {
-    console.error('Error parsing uploaded songs:', error);
-    return [];
-  }
-}
-
-/**
- * Add a new uploaded song
- */
-export function addUploadedSong(song: Song): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  
-  const uploadedSongs = getUploadedSongs();
-  uploadedSongs.push(song);
-  
-  localStorage.setItem('uploadedSongs', JSON.stringify(uploadedSongs));
-  
-  // Dispatch a custom event to notify about the new upload
-  const event = new CustomEvent('songUploaded');
-  window.dispatchEvent(event);
+export async function getUploadedSongs(): Promise<Song[]> {
+  return getAllSongs();
 }
 
 /**
  * Get a specific song by ID
  */
-export function getSongById(id: string): Song | undefined {
-  const allSongs = getUploadedSongs();
-  return allSongs.find(song => song.id === id);
+export async function getSongById(id: string): Promise<Song | null> {
+  try {
+    const response = await fetch(`/api/songs/${id}`);
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching song:', error);
+    return null;
+  }
 }
 
 /**
@@ -61,7 +44,39 @@ export function getSongById(id: string): Song | undefined {
  * This is needed because object URLs from uploaded files are not persistent
  */
 export function createPersistentAudioUrl(file: File): string {
-  // In a real app, this would upload to a server and return a URL
-  // For this demo, we'll create a data URL
+  // In a real app with SQLite, we don't need this function anymore as
+  // we store the files on disk with persistent paths
   return URL.createObjectURL(file);
+}
+
+/**
+ * Upload a new song
+ */
+export async function uploadSong(formData: FormData): Promise<{ success: boolean; song?: Song; error?: string }> {
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.error || 'Failed to upload song'
+      };
+    }
+    
+    return {
+      success: true,
+      song: data.song
+    };
+  } catch (error) {
+    console.error('Error uploading song:', error);
+    return {
+      success: false,
+      error: 'Failed to upload song'
+    };
+  }
 } 

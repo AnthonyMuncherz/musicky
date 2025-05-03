@@ -2,11 +2,43 @@
 
 import React, { useState, useRef } from 'react';
 import { Song } from '@/types/Song';
-import { addUploadedSong, createPersistentAudioUrl } from '@/lib/songService';
+import { uploadSong } from '@/lib/songService';
 
-// Simple ID generator function in case uuid is not available
+// Constants
+const SONGS_STORAGE_KEY = 'musicky_songs';
+
+// Generate a unique ID
 const generateId = () => {
   return `song_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+};
+
+// Create URL from File
+const createBlobUrl = (file: File): string => {
+  return URL.createObjectURL(file);
+};
+
+// Remove localStorage related code
+const saveSong = async (formData: FormData): Promise<boolean> => {
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+    
+    const data = await response.json();
+    
+    // Notify listeners
+    window.dispatchEvent(new CustomEvent('songUploaded'));
+    
+    return true;
+  } catch (error) {
+    console.error('Error uploading song:', error);
+    return false;
+  }
 };
 
 interface UploadState {
@@ -50,7 +82,7 @@ export default function UploadForm() {
     setAudioFile(file);
     
     // Create temporary URL for the audio file
-    const audioUrl = URL.createObjectURL(file);
+    const audioUrl = createBlobUrl(file);
     
     // Load audio to get duration
     if (audioRef.current) {
@@ -90,7 +122,7 @@ export default function UploadForm() {
     }
     
     // Create temporary URL for the image
-    const imageUrl = URL.createObjectURL(file);
+    const imageUrl = createBlobUrl(file);
     setCoverImage(imageUrl);
   };
 
@@ -132,56 +164,45 @@ export default function UploadForm() {
     });
 
     try {
-      // Simulate upload process with progress updates
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setUploadState(prev => ({
-          ...prev,
-          progress: i
-        }));
-      }
-
-      // Get persistent audio URL
-      const audioUrl = createPersistentAudioUrl(audioFile);
-
-      // Create song object
-      const newSong: Song = {
-        id: generateId(),
-        title,
-        artist,
-        duration: audioDuration,
-        coverUrl: coverImage || `https://source.unsplash.com/random/300x300?music`,
-        audioUrl
-      };
-
-      // Add song to storage
-      addUploadedSong(newSong);
-
-      // Reset form and show success
-      setUploadState({
-        isUploading: false,
-        progress: 100,
-        error: null,
-        success: true
-      });
+      // Create FormData
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('artist', artist);
+      formData.append('duration', audioDuration.toString());
+      formData.append('audioFile', audioFile);
       
-      setTitle('');
-      setArtist('');
-      setAudioFile(null);
-      setCoverImage('');
-      setAudioDuration(0);
-      
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      // If we have a cover image file, append it
+      if (coverInputRef.current?.files?.[0]) {
+        formData.append('coverFile', coverInputRef.current.files[0]);
       }
       
+      // Upload to server
+      const success = await saveSong(formData);
+      
+      if (success) {
+        setUploadState({
+          isUploading: false,
+          progress: 100,
+          error: null,
+          success: true
+        });
+        
+        // Reset form
+        setTitle('');
+        setArtist('');
+        setAudioFile(null);
+        setCoverImage('');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        if (coverInputRef.current) coverInputRef.current.value = '';
+      } else {
+        throw new Error('Upload failed');
+      }
     } catch (error) {
-      setUploadState({
+      setUploadState(prev => ({
+        ...prev,
         isUploading: false,
-        progress: 0,
-        error: 'An error occurred during upload. Please try again.',
-        success: false
-      });
+        error: 'Failed to upload song. Please try again.',
+      }));
     }
   };
 
