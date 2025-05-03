@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
@@ -21,14 +23,60 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  code {
+    @apply font-mono;
+  }
 }
 
-code {
-  font-family: var(--font-mono), monospace;
+@layer components {
+  .page-transition {
+    @apply animate-fade-in;
+  }
+
+  .interactive-element {
+    @apply transition-all duration-200 ease-in-out;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s var(--transition-timing);
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.4s var(--transition-timing);
+  }
+
+  .animate-pulse {
+    animation: pulse 1.5s infinite var(--transition-timing);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 /* Animation classes */
@@ -52,18 +100,6 @@ code {
   0% { opacity: 1; }
   50% { opacity: 0.6; }
   100% { opacity: 1; }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s var(--transition-timing);
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s var(--transition-timing);
-}
-
-.animate-pulse {
-  animation: pulse 1.5s infinite var(--transition-timing);
 }
 
 /* Apply animations to specific elements */

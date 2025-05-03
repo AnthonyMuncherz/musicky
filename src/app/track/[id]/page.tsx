@@ -62,10 +62,10 @@ export default function TrackDetail() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <Link 
           href="/" 
-          className="inline-flex items-center mb-6 text-sm hover:underline transition-all duration-200"
+          className="inline-flex items-center mb-8 text-sm hover:underline transition-all duration-200"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="mr-2">
             <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -74,34 +74,36 @@ export default function TrackDetail() {
         </Link>
 
         {isLoading ? (
-          <div className="bg-foreground/5 rounded-lg p-12 text-center animate-pulse">
-            <div className="w-32 h-32 mx-auto rounded-lg bg-foreground/10 mb-6"></div>
-            <div className="h-8 w-2/3 mx-auto bg-foreground/10 rounded mb-4"></div>
-            <div className="h-4 w-1/3 mx-auto bg-foreground/10 rounded"></div>
+          <div className="bg-foreground/5 rounded-2xl p-12 text-center animate-pulse">
+            <div className="w-32 h-32 mx-auto rounded-xl bg-foreground/10 mb-6"></div>
+            <div className="h-8 w-2/3 mx-auto bg-foreground/10 rounded-lg mb-4"></div>
+            <div className="h-4 w-1/3 mx-auto bg-foreground/10 rounded-lg"></div>
           </div>
         ) : error ? (
-          <div className="bg-foreground/5 rounded-lg p-12 text-center">
+          <div className="bg-foreground/5 rounded-2xl p-12 text-center">
             <div className="text-xl font-medium mb-4 text-red-500">{error}</div>
             <p className="mb-6">The song you&apos;re looking for could not be found or loaded.</p>
             <Link
               href="/"
-              className="inline-block px-5 py-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all duration-200"
+              className="inline-block px-6 py-3 rounded-xl bg-primary hover:bg-primary-dark text-white transition-all duration-200 shadow-soft hover:shadow-lg"
             >
               Return to Library
             </Link>
           </div>
         ) : song ? (
           <div className="animate-fade-in">
-            <div className="bg-foreground/5 rounded-lg p-8 mb-8">
+            <div className="bg-foreground/5 rounded-2xl p-8 mb-8 shadow-soft hover:shadow-lg transition-all duration-300">
               <div className="flex flex-col md:flex-row gap-8">
-                <div className="relative w-full md:w-64 h-64 overflow-hidden rounded-lg shrink-0">
-                  <Image
-                    src={song.coverUrl}
-                    alt={`${song.title} album cover`}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    className="transition-transform duration-300 ease-in-out hover:scale-105"
-                  />
+                <div className="relative w-full md:w-64 h-64 shrink-0">
+                  <div className="relative w-full h-full rounded-xl overflow-hidden">
+                    <Image
+                      src={song.coverUrl}
+                      alt={`${song.title} album cover`}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      className="transition-transform duration-300 ease-in-out hover:scale-105"
+                    />
+                  </div>
                 </div>
                 
                 <div className="flex-1 flex flex-col justify-between">
@@ -120,7 +122,7 @@ export default function TrackDetail() {
                     <div className="flex gap-4">
                       <button
                         onClick={() => currentSong?.id === song.id ? togglePlay() : addToQueue(song)}
-                        className="px-6 py-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                        className="px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary-dark transition-all duration-200 hover:scale-105 shadow-soft hover:shadow-lg flex items-center gap-2"
                       >
                         {currentSong?.id === song.id ? (
                           isPlaying ? (
@@ -151,7 +153,7 @@ export default function TrackDetail() {
                       {currentSong?.id !== song.id && (
                         <button
                           onClick={() => addToQueue(song)}
-                          className="px-6 py-3 rounded-lg bg-foreground/10 hover:bg-foreground/20 transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                          className="px-6 py-3 rounded-xl bg-foreground/10 hover:bg-foreground/20 transition-all duration-200 hover:scale-105 shadow-soft hover:shadow-lg flex items-center gap-2"
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M12 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
