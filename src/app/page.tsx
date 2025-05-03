@@ -96,22 +96,16 @@ export default function Home() {
           </div>
           
           <div className="space-y-8">
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Current Queue</h2>
-              <PlayerQueue
-                queue={queueItems}
-                currentSong={currentSong}
-                onRemove={removeFromQueue}
-              />
-            </div>
+            <PlayerQueue
+              queue={queueItems}
+              currentSong={currentSong}
+              onRemove={removeFromQueue}
+            />
             
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Recently Played</h2>
-              <PlayerHistory
-                history={history}
-                onAddToQueue={addToQueue}
-              />
-            </div>
+            <PlayerHistory
+              history={history}
+              onAddToQueue={addToQueue}
+            />
           </div>
         </div>
       </div>
