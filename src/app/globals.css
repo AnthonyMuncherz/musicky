@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --transition-duration: 300ms;
+  --transition-timing: ease-in-out;
 }
 
 @theme inline {
@@ -22,5 +24,61 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+code {
+  font-family: var(--font-mono), monospace;
+}
+
+/* Animation classes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s var(--transition-timing);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s var(--transition-timing);
+}
+
+.animate-pulse {
+  animation: pulse 1.5s infinite var(--transition-timing);
+}
+
+/* Apply animations to specific elements */
+.page-transition {
+  animation: fadeIn 0.3s var(--transition-timing);
+}
+
+/* Transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: var(--transition-timing);
+  transition-duration: var(--transition-duration);
+}
+
+/* Ensure all interactive elements have smooth transitions */
+button, a, input, select, textarea {
+  transition: all 0.2s var(--transition-timing);
 }
