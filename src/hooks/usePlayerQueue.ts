@@ -12,6 +12,7 @@ interface PlayerQueueState {
 export function usePlayerQueue() {
   // Using our Queue data structure for the playlist
   const queueRef = useRef(new Queue<Song>());
+  const [queueItems, setQueueItems] = useState<Song[]>([]);
   const [history, setHistory] = useState<Song[]>([]);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -36,25 +37,32 @@ export function usePlayerQueue() {
     };
   }, []);
 
+  // Update queue items whenever the queue changes
+  const updateQueueItems = useCallback(() => {
+    setQueueItems(queueRef.current.getAll());
+  }, []);
+
   // Add a song to the queue
   const addToQueue = useCallback((song: Song) => {
     queueRef.current.enqueue(song);
+    updateQueueItems();
     
     // If nothing is playing, start playing the added song
     if (!currentSong) {
       playNext();
     }
-  }, [currentSong]);
+  }, [currentSong, updateQueueItems]);
 
   // Add multiple songs to the queue
   const addMultipleToQueue = useCallback((songs: Song[]) => {
     songs.forEach(song => queueRef.current.enqueue(song));
+    updateQueueItems();
     
     // If nothing is playing, start playing the first added song
     if (!currentSong && songs.length > 0) {
       playNext();
     }
-  }, [currentSong]);
+  }, [currentSong, updateQueueItems]);
 
   // Play the next song in the queue
   const playNext = useCallback(() => {
@@ -66,6 +74,7 @@ export function usePlayerQueue() {
     // Get the next song from the queue (dequeue operation)
     const nextSong = queueRef.current.dequeue();
     setCurrentSong(nextSong || null);
+    updateQueueItems();
     
     if (nextSong) {
       // Set the new audio source and play
@@ -82,7 +91,7 @@ export function usePlayerQueue() {
     } else {
       setIsPlaying(false);
     }
-  }, [currentSong]);
+  }, [currentSong, updateQueueItems]);
 
   // Play/pause the current song
   const togglePlay = useCallback(() => {
@@ -98,25 +107,22 @@ export function usePlayerQueue() {
     setIsPlaying(!isPlaying);
   }, [isPlaying, currentSong]);
 
-  // Get the current queue
-  const getQueue = useCallback(() => {
-    return queueRef.current.getAll();
-  }, []);
-
   // Remove a song from the queue by index
   const removeFromQueue = useCallback((index: number) => {
     queueRef.current.removeAt(index);
-  }, []);
+    updateQueueItems();
+  }, [updateQueueItems]);
 
   // Clear the queue
   const clearQueue = useCallback(() => {
     queueRef.current.clear();
-  }, []);
+    updateQueueItems();
+  }, [updateQueueItems]);
 
   return {
     currentSong,
     isPlaying,
-    queueItems: getQueue(),
+    queueItems,
     history,
     addToQueue,
     addMultipleToQueue,
