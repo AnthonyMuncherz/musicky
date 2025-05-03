@@ -1,6 +1,4 @@
-'use server';
-
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getDBSongById } from '@/lib/db';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -8,16 +6,16 @@ import path from 'path';
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<Response> {
   try {
     const id = params.id;
-    const song = getDBSongById(id);
+    const song = await getDBSongById(id);
     
     if (!song) {
-      return NextResponse.json(
-        { error: 'Audio not found' },
-        { status: 404 }
-      );
+      return new Response(JSON.stringify({ error: 'Audio not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
     
     const filePath = path.join(process.cwd(), 'public', song.audioUrl);
@@ -83,16 +81,16 @@ export async function GET(
       }
     } catch (error) {
       console.error('Error reading audio file:', error);
-      return NextResponse.json(
-        { error: 'Audio file not accessible' },
-        { status: 500 }
-      );
+      return new Response(JSON.stringify({ error: 'Audio file not accessible' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
   } catch (error) {
     console.error('Error serving audio:', error);
-    return NextResponse.json(
-      { error: 'Failed to serve audio' },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: 'Failed to serve audio' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 } 

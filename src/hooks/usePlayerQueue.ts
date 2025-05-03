@@ -18,6 +18,35 @@ export function usePlayerQueue() {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Play the next song in the queue
+  const playNext = useCallback(() => {
+    // If there's a current song, add it to history
+    if (currentSong) {
+      setHistory(prev => [currentSong, ...prev]);
+    }
+    
+    // Get the next song from the queue (dequeue operation)
+    const nextSong = queueRef.current.dequeue();
+    setCurrentSong(nextSong || null);
+    setQueueItems(queueRef.current.getAll());
+    
+    if (nextSong) {
+      // Set the new audio source and play
+      if (audioRef.current) {
+        // Use the audioUrl directly - it's already a blob URL created during upload
+        audioRef.current.src = nextSong.audioUrl;
+        audioRef.current.play()
+          .then(() => setIsPlaying(true))
+          .catch(error => {
+            console.error('Error playing audio:', error);
+            setIsPlaying(false);
+          });
+      }
+    } else {
+      setIsPlaying(false);
+    }
+  }, [currentSong]);
+
   // Initialize audio element
   useEffect(() => {
     audioRef.current = new Audio();
@@ -35,7 +64,7 @@ export function usePlayerQueue() {
       audio.removeEventListener('ended', handleEnded);
       audio.pause();
     };
-  }, []);
+  }, [playNext]);
 
   // Update queue items whenever the queue changes
   const updateQueueItems = useCallback(() => {
@@ -51,7 +80,7 @@ export function usePlayerQueue() {
     if (!currentSong) {
       playNext();
     }
-  }, [currentSong, updateQueueItems]);
+  }, [currentSong, playNext, updateQueueItems]);
 
   // Add multiple songs to the queue
   const addMultipleToQueue = useCallback((songs: Song[]) => {
@@ -62,36 +91,7 @@ export function usePlayerQueue() {
     if (!currentSong && songs.length > 0) {
       playNext();
     }
-  }, [currentSong, updateQueueItems]);
-
-  // Play the next song in the queue
-  const playNext = useCallback(() => {
-    // If there's a current song, add it to history
-    if (currentSong) {
-      setHistory(prev => [currentSong, ...prev]);
-    }
-    
-    // Get the next song from the queue (dequeue operation)
-    const nextSong = queueRef.current.dequeue();
-    setCurrentSong(nextSong || null);
-    updateQueueItems();
-    
-    if (nextSong) {
-      // Set the new audio source and play
-      if (audioRef.current) {
-        // Use the audioUrl directly - it's already a blob URL created during upload
-        audioRef.current.src = nextSong.audioUrl;
-        audioRef.current.play()
-          .then(() => setIsPlaying(true))
-          .catch(error => {
-            console.error('Error playing audio:', error);
-            setIsPlaying(false);
-          });
-      }
-    } else {
-      setIsPlaying(false);
-    }
-  }, [currentSong, updateQueueItems]);
+  }, [currentSong, playNext, updateQueueItems]);
 
   // Play/pause the current song
   const togglePlay = useCallback(() => {

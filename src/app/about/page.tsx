@@ -34,7 +34,7 @@ export default function About() {
           <p className="mb-4">
             Musicky implements a sequential processing system for music playback. When you add a song to your
             playlist, it joins at the end of the line. The player always processes songs from the beginning of 
-            the list, ensuring a fair "first come, first served" approach to your music.
+            the list, ensuring a fair &ldquo;first come, first served&rdquo; approach to your music.
           </p>
           <p>
             This sequential processing approach is common in many media players and streaming services, ensuring

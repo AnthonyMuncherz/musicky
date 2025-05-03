@@ -82,7 +82,7 @@ export default function TrackDetail() {
         ) : error ? (
           <div className="bg-foreground/5 rounded-lg p-12 text-center">
             <div className="text-xl font-medium mb-4 text-red-500">{error}</div>
-            <p className="mb-6">The song you're looking for could not be found or loaded.</p>
+            <p className="mb-6">The song you&apos;re looking for could not be found or loaded.</p>
             <Link
               href="/"
               className="inline-block px-5 py-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all duration-200"

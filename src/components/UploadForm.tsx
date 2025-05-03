@@ -1,16 +1,6 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Song } from '@/types/Song';
-import { uploadSong } from '@/lib/songService';
-
-// Constants
-const SONGS_STORAGE_KEY = 'musicky_songs';
-
-// Generate a unique ID
-const generateId = () => {
-  return `song_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-};
 
 // Create URL from File
 const createBlobUrl = (file: File): string => {
@@ -28,8 +18,6 @@ const saveSong = async (formData: FormData): Promise<boolean> => {
     if (!response.ok) {
       throw new Error('Upload failed');
     }
-    
-    const data = await response.json();
     
     // Notify listeners
     window.dispatchEvent(new CustomEvent('songUploaded'));

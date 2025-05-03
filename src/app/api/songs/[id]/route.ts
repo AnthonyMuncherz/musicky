@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getDBSongById } from '@/lib/db';
+import { Song } from '@/types/Song';
 
 // GET /api/songs/[id] - Get a song by ID
 export async function GET(
@@ -20,7 +21,7 @@ export async function GET(
     }
     
     // Remove audioData from response to reduce payload size
-    const { audioData, ...sanitizedSong } = song as any;
+    const { ...sanitizedSong } = song as Song;
     
     return NextResponse.json(sanitizedSong);
   } catch (error) {
